@@ -2,11 +2,15 @@
 
 const { default: mongoose } = require('mongoose');
 const { countConnect } = require('../helpers/checkConn');
-
-const connectString = `mongodb://localhost:27017/quangdvn-ec`;
+const {
+  database: { host, port, name },
+} = require('../configs/config.mongodb');
+const MONGODB_URI =
+  process.env.MONGODB_URI || `mongodb://${host}:${port}/${name}`;
+// const connectString = `mongodb://${ecConfig}:27017/quangdvn-ec`;
 
 mongoose
-  .connect(connectString, {
+  .connect(MONGODB_URI, {
     // useNewUrlParser: true,
     // useUnifiedTopology: true,
   })

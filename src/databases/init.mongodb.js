@@ -2,9 +2,12 @@
 
 const mongoose = require('mongoose');
 const { countConnect } = require('../helpers/checkConn');
-
+const {
+  database: { host, port, name },
+} = require('../configs/config.mongodb');
 const MONGODB_URI =
-  process.env.MONGODB_URI || 'mongodb://localhost:27017/quangdvn-ec';
+  process.env.MONGODB_URI ||
+  `mongodb://admin:mongo@localhost:27017/quangdvn-ec?authSource=admin`;
 
 class Database {
   static instance = null;
