@@ -1,5 +1,4 @@
 'use strict';
-
 const { findById } = require('../services/apiKey.service');
 
 const HEADERS = {
@@ -63,10 +62,8 @@ const permissionCheck = (permission) => {
 // block, you can use the
 // asyncHandler
 // to handle the error propagation for you
-const asyncHandler = (fn) => (req, res, next) => fn(req, res, next).catch(next);
 
 module.exports = {
   apiKeyCheck,
   permissionCheck,
-  asyncHandler,
 };

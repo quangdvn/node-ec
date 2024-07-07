@@ -3,14 +3,16 @@ const shopModel = require('../models/shop.model');
 const bcrypt = require('bcrypt');
 const crypto = require('node:crypto');
 const KeyTokenService = require('./keyToken.service');
-const { createAccessTokenPair } = require('../auth/authUtils');
+const { createAccessTokenPair, verifyToken } = require('../auth/authUtils');
 const { getUserInfoData } = require('../utils');
 const {
   BadRequestError,
   NotFoundError,
   AuthenticationFailureError,
+  ForbiddenError,
 } = require('../core/error.response');
 const { findByEmail } = require('./shop.service');
+const { $where } = require('../models/apiKey.model');
 
 const SHOP_ROLES = {
   SHOP: 'Shop',
@@ -118,6 +120,79 @@ class AccessService {
         refreshToken,
       };
     } else throw new BadRequestError('Error: Failed to create shop');
+  };
+
+  static logout = async (keyToken) => {
+    const deletedToken = await KeyTokenService.removeKeyById(keyToken._id);
+    return deletedToken;
+  };
+
+  static handleRefreshToken = async (refreshToken) => {
+    /**
+     * Check if this token is blacklist ?
+     *
+     */
+    const foundToken = await KeyTokenService.findByOldRefreshToken(
+      refreshToken
+    );
+    if (foundToken) {
+      // Check who you are
+      const { userId } = await verifyToken(refreshToken, foundToken.publicKey);
+      // Delete old key in key store belong to user ← You might be compromised
+      await KeyTokenService.removeKeyByUser(userId);
+      throw new ForbiddenError('Error: Something wrong happend !!!');
+    }
+
+    // If not found, normal flow
+    const holderToken = await KeyTokenService.findByCurrentRefreshToken(
+      refreshToken
+    );
+    console.log(holderToken);
+    if (!holderToken)
+      throw new AuthenticationFailureError('Error: Shop not registered 1 ');
+
+    // Verify token
+    const { userId, email } = await verifyToken(
+      refreshToken,
+      holderToken.publicKey
+    );
+    const foundShop = await findByEmail({ email });
+    if (!foundShop)
+      throw new AuthenticationFailureError('Error: Shop not registered 2');
+
+    // Create new token pair
+    const { refreshToken: newRefreshToken, accessToken: newAccessToken } =
+      await createAccessTokenPair(
+        { userId, email },
+        holderToken.publicKey,
+        holderToken.privateKey
+      );
+
+    // Update the holderToken instance
+    // holderToken.currentRefreshToken = newRefreshToken;
+    // holderToken.refreshTokens.push(refreshToken);
+
+    // await holderToken.save();
+    await holderToken.updateOne({
+      $set: {
+        currentRefreshToken: newRefreshToken,
+      },
+      $addToSet: {
+        expiredRefreshTokens: refreshToken,
+      },
+    });
+
+    return {
+      user: { userId, email },
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    };
+
+    // if (!foundToken) throw new NotFoundError('Error: Not found token');
+    // // Delete all token in DB
+    // await KeyTokenService.removeKeyById(foundToken._id);
+    // await KeyTokenService.removeKeyById(keyToken._id);
+    // return { refreshToken };
   };
 }
 
