@@ -12,7 +12,6 @@ const {
   ForbiddenError,
 } = require('../core/error.response');
 const { findByEmail } = require('./shop.service');
-const { $where } = require('../models/apiKey.model');
 
 const SHOP_ROLES = {
   SHOP: 'Shop',
@@ -187,12 +186,43 @@ class AccessService {
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
     };
+  };
 
-    // if (!foundToken) throw new NotFoundError('Error: Not found token');
-    // // Delete all token in DB
-    // await KeyTokenService.removeKeyById(foundToken._id);
-    // await KeyTokenService.removeKeyById(keyToken._id);
-    // return { refreshToken };
+  static handleRefreshTokenV2 = async ({ refreshToken, user, keyStore }) => {
+    const { userId, email } = user;
+    if (keyStore.expiredRefreshTokens.include(refreshToken)) {
+      await KeyTokenService.removeKeyByUser(userId);
+      throw new ForbiddenError('Error: Something wrong happend !!!');
+    }
+    if (keyStore.refreshToken != refreshToken)
+      throw new AuthenticationFailureError('Error: Shop not registered');
+
+    const foundShop = await findByEmail({ email });
+    if (!foundShop)
+      throw new AuthenticationFailureError('Error: Shop not registered 2');
+
+    // Create new token pair
+    const newToken = await createAccessTokenPair(
+      { userId, email },
+      keyStore.publicKey,
+      keyStore.privateKey
+    );
+
+    // await holderToken.save();
+    await keyStore.updateOne({
+      $set: {
+        currentRefreshToken: newToken.refreshToken,
+      },
+      $addToSet: {
+        expiredRefreshTokens: refreshToken,
+      },
+    });
+
+    return {
+      user: { userId, email },
+      accessToken: newToken.accessToken,
+      refreshToken: newToken.refreshToken,
+    };
   };
 }
 

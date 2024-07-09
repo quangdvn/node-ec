@@ -12,6 +12,7 @@ const HEADERS = {
   API_KEY: 'x-api-key',
   CLIENT_ID: 'x-client-id',
   AUTHORIZATION: 'authorization',
+  REFRESH_TOKEN: 'x-refresh-token',
 };
 
 const createAccessTokenPair = async (payload, publicKey, privateKey) => {
@@ -45,6 +46,55 @@ const createAccessTokenPair = async (payload, publicKey, privateKey) => {
   }
 };
 
+const authorizationV2 = asyncHandler(async (req, res, next) => {
+  /**
+   * 1 - Check userID existence ?
+   * 2 - Get accessToken
+   * 3 - Verify token
+   * 4 - Check user data
+   * 5 - Check key store
+   * 6 - (Optional) Blacklist token
+   * OK -> Return next()
+   */
+  // 1
+  const userId = req.headers[HEADERS.CLIENT_ID];
+  if (!userId) throw new AuthenticationFailureError('Error: Invalid request');
+
+  // 2
+  const keyStore = await KeyTokenService.findByUserId(userId);
+  if (!keyStore) throw new NotFoundError('Error: Key not found');
+
+  // 3 - Check refresh token if existed, else check access token
+  if (req.headers[HEADERS.REFRESH_TOKEN]) {
+    try {
+      const refreshToken = req.headers[HEADERS.REFRESH_TOKEN];
+      const decoded = JWT.verify(refreshToken, keyStore.publicKey);
+      if (userId !== decoded.userId)
+        throw new AuthenticationFailureError('Error: Invalid user');
+      req.keyStore = keyStore;
+      req.user = decoded;
+      req.refreshToken = refreshToken;
+      next();
+    } catch (error) {
+      throw error;
+    }
+  } else {
+    const accessToken = req.headers[HEADERS.AUTHORIZATION];
+    if (!accessToken)
+      throw new AuthenticationFailureError('Error: Invalid request');
+
+    try {
+      const decoded = JWT.verify(accessToken, keyStore.privateKey);
+      if (userId !== decoded.userId)
+        throw new AuthenticationFailureError('Error: Invalid user');
+      req.keyStore = keyStore;
+      next();
+    } catch (error) {
+      throw error;
+    }
+  }
+});
+
 const authorization = asyncHandler(async (req, res, next) => {
   /**
    * 1 - Check userID existence ?
@@ -55,18 +105,6 @@ const authorization = asyncHandler(async (req, res, next) => {
    * 6 - (Optional) Blacklist token
    * OK -> Return next()
    */
-
-  // const accessToken = req.headers.authorization;
-
-  // if (!accessToken) return res.status(401).json({ message: 'Unauthorized' });
-
-  // JWT.verify(accessToken, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-  //   if (err) {
-  //     return res.status(401).json({ message: 'Unauthorized' });
-  //   }
-  //   req.user = decoded;
-  //   next();
-  // });
   // 1
   const userId = req.headers[HEADERS.CLIENT_ID];
   if (!userId) throw new AuthenticationFailureError('Error: Invalid request');
@@ -95,4 +133,9 @@ const verifyToken = async (token, secretKey) => {
   return JWT.verify(token, secretKey);
 };
 
-module.exports = { createAccessTokenPair, authorization, verifyToken };
+module.exports = {
+  createAccessTokenPair,
+  authorization,
+  authorizationV2,
+  verifyToken,
+};
