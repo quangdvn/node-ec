@@ -1,10 +1,10 @@
 'use strict';
-const shopModel = require('../models/shop.model');
+const shopModel = require('../../models/shop.model');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
-const KeyTokenService = require('./keyToken.service');
-const { createAccessTokenPair } = require('../auth/authUtils');
-const { getUserInfoData } = require('../utils');
+const KeyTokenService = require('../keyToken.service');
+const { createAccessTokenPair } = require('../../auth/authUtils');
+const { getUserInfoData } = require('../../utils');
 
 const SHOP_ROLES = {
   SHOP: 'Shop',

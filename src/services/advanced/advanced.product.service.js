@@ -1,33 +1,14 @@
 'use strict';
-const { BadRequestError } = require('../core/error.response');
+const { BadRequestError } = require('../../core/error.response');
 const {
-  productModel,
+  furnitureModel,
   clothingModel,
   electronicModel,
-} = require('../models/product.model');
+  productModel,
+} = require('../../models/product.model');
 
 // Base abstract product class
 class Product {
-  /**
-   *  productName: { type: String, required: true },
-      productThumb: { type: String, required: true },
-      productDescription: { type: String },
-      productPrice: { type: Number, required: true },
-      productQuantity: { type: Number, required: true },
-      productType: {
-        type: String,
-        required: true,
-        enum: ['Electronics', 'Clothing', 'Furniture'],
-      },
-      productShop: {
-        type: Schema.Types.ObjectId,
-        required: true,
-        ref: 'Shop',
-      },
-      productAttributes: {
-        type: Schema.Types.Mixed, // Mixed type allows storing any type of data
-      },
-   */
   constructor({
     productName,
     productThumb,
@@ -102,23 +83,58 @@ class Electronic extends Product {
   }
 }
 
-// Factory class to create product - Design pattern: Factory
+class Furniture extends Product {
+  constructor(product) {
+    super(product);
+  }
+
+  async create() {
+    const newFurniture = await furnitureModel.create({
+      ...this.productAttributes,
+      productShop: this.productShop,
+    });
+    if (!newFurniture)
+      throw new BadRequestError(
+        'Error: Fail to create new electronic attributes'
+      );
+
+    const newProduct = await super.create(newFurniture._id);
+    if (!newProduct)
+      throw new BadRequestError('Error: Fail to create new electronic product');
+
+    return newProduct;
+  }
+}
+
+// Factory class to create product - Design pattern: Factory + Strategy
 class ProductFactory {
+  static productRegistry = {
+    // key: productType, value: class
+    // Clothing,
+    // Electronic,
+    // Furniture,
+  };
+
+  static registerProductType(type, refClass) {
+    this.productRegistry[type] = refClass;
+  }
+
   /**
    * type: productType
    * payload
    */
   static async createProduct(type, payload) {
-    // TODO: Can become too complicated when more types of product are introduced
-    switch (type) {
-      case 'Clothing':
-        return new Clothing(payload).create();
-      case 'Electronic':
-        return new Electronic(payload).create();
-      default:
-        throw new BadRequestError(`Error: Invalid product ${type}`);
-    }
+    const productClass = this.productRegistry[type];
+    if (!productClass)
+      throw new BadRequestError(`Error: Invalid product ${type}`);
+
+    return new productClass(payload).create();
   }
 }
+
+// Register product types
+ProductFactory.registerProductType('Clothing', Clothing);
+ProductFactory.registerProductType('Electronic', Electronic);
+ProductFactory.registerProductType('Furniture', Furniture);
 
 module.exports = ProductFactory;

@@ -22,7 +22,7 @@ const SHOP_ROLES = {
 
 class AccessService {
   static login = async ({ email, password, currentRefreshToken = null }) => {
-    // Remember to remove old refresh token if any when user re-login
+    //TODO: Remember to remove old refresh token if any when user re-login
     /*
       1 - Check DB
       2 - Match password
