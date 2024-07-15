@@ -1,5 +1,8 @@
 'use strict';
-const { Schema, model } = require('mongoose');
+const { Schema, model, set } = require('mongoose');
+const slugify = require('slugify');
+const shopModel = require('./shop.model');
+const { NotFoundError } = require('../core/error.response');
 
 const DOCUMENT_NAME = 'Product';
 const COLLECTION_NAME = 'Products';
@@ -11,6 +14,7 @@ const productSchema = new Schema(
     productDescription: { type: String },
     productPrice: { type: Number, required: true },
     productQuantity: { type: Number, required: true },
+    productSlug: { type: String, unique: true },
     productType: {
       type: String,
       required: true,
@@ -24,12 +28,42 @@ const productSchema = new Schema(
     productAttributes: {
       type: Schema.Types.Mixed, // Mixed type allows storing any type of data
     },
+
+    // Advanced fields
+    productAverageRating: {
+      type: Number,
+      default: 4.5,
+      min: [1, 'Rating must be above 1.0'],
+      max: [5, 'Rating must be below 5.0'],
+      set: (val) => Math.round(val * 10) / 10, // Rounds to one decimal place
+    },
+    productVariation: { type: Array, default: [] },
+    // Mostly-used, should add index
+    isDraft: { type: Boolean, default: true, index: true, select: false },
+    isPublish: { type: Boolean, default: false, index: true, select: false },
   },
   {
     collection: COLLECTION_NAME,
     timestamps: true,
   }
 );
+
+// Product document middleware: runs before .save() and .create()
+productSchema.pre('save', async function (next) {
+  try {
+    const shop = await shopModel.findById(this.productShop);
+    if (shop) {
+      this.productSlug = slugify(`${shop.name} ${this.productName}`, {
+        lower: true,
+      });
+      next();
+    } else {
+      throw new NotFoundError('Error: Invalid shop');
+    }
+  } catch (err) {
+    return next(err);
+  }
+});
 
 // Define schema for each product type
 const clothingSchema = new Schema(
