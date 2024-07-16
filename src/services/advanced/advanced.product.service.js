@@ -6,6 +6,13 @@ const {
   electronicModel,
   productModel,
 } = require('../../models/product.model');
+const {
+  findAllDraftsForShop,
+  findAllPublishForShop,
+  publishProductByShop,
+  unPublishProductByShop,
+  searchProductsByUser,
+} = require('../../repositories/product.repo');
 
 // Base abstract product class
 class Product {
@@ -129,6 +136,28 @@ class ProductFactory {
       throw new BadRequestError(`Error: Invalid product ${type}`);
 
     return new productClass(payload).create();
+  }
+
+  static async publishProductByShop({ shopId, productId }) {
+    return await publishProductByShop({ shopId, productId });
+  }
+
+  static async unPublishProductByShop({ shopId, productId }) {
+    return await unPublishProductByShop({ shopId, productId });
+  }
+
+  static async getAllDraftsForShop({ shopId, limit = 50, skip = 0 }) {
+    const query = { productShop: shopId, isDraft: true };
+    return await findAllDraftsForShop({ query, limit, skip });
+  }
+
+  static async getAllPublishForShop({ shopId, limit = 50, skip = 0 }) {
+    const query = { productShop: shopId, isPublished: true };
+    return await findAllPublishForShop({ query, limit, skip });
+  }
+
+  static async searchProductsByUser({ searchKey }) {
+    return await searchProductsByUser({ searchKey });
   }
 }
 

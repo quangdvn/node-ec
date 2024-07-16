@@ -40,13 +40,16 @@ const productSchema = new Schema(
     productVariation: { type: Array, default: [] },
     // Mostly-used, should add index
     isDraft: { type: Boolean, default: true, index: true, select: false },
-    isPublish: { type: Boolean, default: false, index: true, select: false },
+    isPublished: { type: Boolean, default: false, index: true, select: false },
   },
   {
     collection: COLLECTION_NAME,
     timestamps: true,
   }
 );
+
+// Create index to search
+productSchema.index({ productName: 'text', productDescription: 'text' });
 
 // Product document middleware: runs before .save() and .create()
 productSchema.pre('save', async function (next) {
