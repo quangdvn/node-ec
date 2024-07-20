@@ -12,7 +12,11 @@ const {
   publishProductByShop,
   unPublishProductByShop,
   searchProductsByUser,
+  findAllProducts,
+  findProduct,
+  updateProductById,
 } = require('../../repositories/product.repo');
+const { updateNestedObjectParser } = require('../../utils');
 
 // Base abstract product class
 class Product {
@@ -37,9 +41,13 @@ class Product {
   }
 
   async create(productId) {
-    // Ensure ids of product shema and sub schemas are equal
+    // Ensure ids of product shema and sub schemas are equal (sub schema is created first)
     const newProduct = await productModel.create({ ...this, _id: productId });
     return newProduct;
+  }
+
+  async update(productId, payload) {
+    return await updateProductById({ productId, payload, model: productModel });
   }
 }
 
@@ -64,6 +72,31 @@ class Clothing extends Product {
       throw new BadRequestError('Error: Fail to create new clothing product');
 
     return newProduct;
+  }
+
+  async update(productId) {
+    /**
+     * 1. Remove null or undefined attr
+     * 2. Check whether attr is updated or only common fields are updated
+     *    If object.attr -> Update child
+     */
+    const productPayload = this;
+    // const productPayload = removeNestedUndefinedObject(this);
+    // const productPayload = updateNestedObjectParser(this);
+    if (productPayload.productAttributes) {
+      await updateProductById({
+        productId,
+        payload: updateNestedObjectParser(productPayload.productAttributes),
+        model: clothingModel,
+      });
+    }
+
+    const updateProduct = await super.update(
+      productId,
+      updateNestedObjectParser(productPayload)
+    );
+    console.log('This is final version: ', updateProduct);
+    return updateProduct;
   }
 }
 
@@ -138,6 +171,14 @@ class ProductFactory {
     return new productClass(payload).create();
   }
 
+  static async updateProduct(type, productId, payload) {
+    const productClass = this.productRegistry[type];
+    if (!productClass)
+      throw new BadRequestError(`Error: Invalid product ${type}`);
+
+    return new productClass(payload).update(productId);
+  }
+
   static async publishProductByShop({ shopId, productId }) {
     return await publishProductByShop({ shopId, productId });
   }
@@ -158,6 +199,25 @@ class ProductFactory {
 
   static async searchProductsByUser({ searchKey }) {
     return await searchProductsByUser({ searchKey });
+  }
+
+  static async findAllProducts({
+    limit = 50,
+    sort = 'ctime',
+    page = 1,
+    filter = { isPublished: true },
+  }) {
+    return await findAllProducts({
+      limit,
+      sort,
+      page,
+      filter,
+      select: ['productName, productPrice, productThumb'],
+    });
+  }
+
+  static async findProduct({ productId }) {
+    return await findProduct({ productId, unSelect: ['__v'] });
   }
 }
 

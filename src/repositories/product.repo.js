@@ -2,6 +2,7 @@
 
 const { Types } = require('mongoose');
 const { productModel } = require('../models/product.model');
+const { getSelectData, getUnSelectData } = require('../utils');
 
 const queryProducts = async (query) => {
   return await productModel
@@ -71,10 +72,50 @@ const searchProductsByUser = async ({ searchKey }) => {
   return results;
 };
 
+const findAllProducts = async ({ limit, sort, page, filter, select }) => {
+  const skip = (page - 1) * limit;
+  const sortBy = sort === 'ctime' ? { _id: -1 } : { _id: 1 };
+  const allProducts = await productModel
+    .find(filter)
+    .sort(sortBy)
+    .skip(skip)
+    .limit(limit)
+    .select(getSelectData(select))
+    .lean()
+    .exec();
+
+  return allProducts;
+};
+
+const findProduct = async ({ productId, unSelect }) => {
+  return await productModel
+    .findById(productId)
+    .select(getUnSelectData(unSelect))
+    .lean()
+    .exec();
+};
+
+const updateProductById = async ({
+  productId,
+  payload,
+  model,
+  isNew = true,
+}) => {
+  // TODO: Handle if product is not found
+  return await model
+    .findByIdAndUpdate(productId, payload, {
+      new: isNew,
+    })
+    .exec();
+};
+
 module.exports = {
   findAllDraftsForShop,
   findAllPublishForShop,
   publishProductByShop,
   unPublishProductByShop,
   searchProductsByUser,
+  findAllProducts,
+  findProduct,
+  updateProductById,
 };
