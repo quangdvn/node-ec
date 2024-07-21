@@ -1,5 +1,4 @@
 'use strict';
-
 const { Types } = require('mongoose');
 const { productModel } = require('../models/product.model');
 const { getSelectData, getUnSelectData } = require('../utils');
@@ -77,13 +76,15 @@ const findAllProducts = async ({ limit, sort, page, filter, select }) => {
   const sortBy = sort === 'ctime' ? { _id: -1 } : { _id: 1 };
   const allProducts = await productModel
     .find(filter)
-    .sort(sortBy)
-    .skip(skip)
-    .limit(limit)
+    // .sort(sortBy)
+    // .skip(skip)
+    // .limit(limit)
     .select(getSelectData(select))
     .lean()
     .exec();
-
+  console.log('Params', filter);
+  console.log('Params', select);
+  console.log('Found smt?', allProducts);
   return allProducts;
 };
 

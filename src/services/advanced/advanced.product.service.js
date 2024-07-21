@@ -6,6 +6,7 @@ const {
   electronicModel,
   productModel,
 } = require('../../models/product.model');
+const { insertToInventory } = require('../../repositories/inventory.repo');
 const {
   findAllDraftsForShop,
   findAllPublishForShop,
@@ -43,6 +44,15 @@ class Product {
   async create(productId) {
     // Ensure ids of product shema and sub schemas are equal (sub schema is created first)
     const newProduct = await productModel.create({ ...this, _id: productId });
+
+    if (newProduct) {
+      await insertToInventory({
+        productId: newProduct._id,
+        shopId: this.productShop,
+        stock: this.productQuantity,
+      });
+    }
+
     return newProduct;
   }
 
@@ -95,7 +105,6 @@ class Clothing extends Product {
       productId,
       updateNestedObjectParser(productPayload)
     );
-    console.log('This is final version: ', updateProduct);
     return updateProduct;
   }
 }
