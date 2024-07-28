@@ -1,7 +1,11 @@
 'use strict';
 const { Types } = require('mongoose');
 const { productModel } = require('../models/product.model');
-const { getSelectData, getUnSelectData } = require('../utils');
+const {
+  getSelectData,
+  getUnSelectData,
+  convertToMongoDBObjectId,
+} = require('../utils');
 
 const queryProducts = async (query) => {
   return await productModel
@@ -110,6 +114,28 @@ const updateProductById = async ({
     .exec();
 };
 
+const findProductById = async (productId) => {
+  return await productModel
+    .findOne({ _id: convertToMongoDBObjectId(productId) })
+    .lean()
+    .exec();
+};
+
+const checkProductByServer = async (products) => {
+  return Promise.all(
+    products.map(async (product) => {
+      const foundProduct = await findProductById(product.productId);
+      if (foundProduct) {
+        return {
+          price: foundProduct.productPrice,
+          quantity: product.quantity,
+          name: foundProduct.productName,
+        };
+      }
+    })
+  );
+};
+
 module.exports = {
   findAllDraftsForShop,
   findAllPublishForShop,
@@ -119,4 +145,6 @@ module.exports = {
   findAllProducts,
   findProduct,
   updateProductById,
+  findProductById,
+  checkProductByServer,
 };

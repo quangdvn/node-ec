@@ -221,7 +221,7 @@ class ProductFactory {
       sort,
       page,
       filter,
-      select: ['productName, productPrice, productThumb'],
+      select: ['productName', 'productPrice', 'productThumb', 'productShop'],
     });
   }
 
