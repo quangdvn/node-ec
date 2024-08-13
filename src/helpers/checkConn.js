@@ -8,7 +8,7 @@ const _SECONDS = 5000; // Every 5 seconds
 // Check DB connect
 const countConnect = () => {
   const numConnection = mongoose.connections.length;
-  console.log(`Number of connections: ${numConnection}`);
+  console.log(`Number of MongoDB connections: ${numConnection}`);
 };
 
 // Check DB overload

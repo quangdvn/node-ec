@@ -10,8 +10,9 @@ const redisClient = redis.createClient({
   port: 6379,
 });
 
-const pexpire = promisify(redisClient.pExpire).bind(redisClient);
-const setnxAsync = promisify(redisClient.setNX).bind(redisClient);
+// Redis version 3.1.2
+const pexpire = promisify(redisClient.pexpire).bind(redisClient);
+const setnxAsync = promisify(redisClient.setnx).bind(redisClient);
 
 const accquireLock = async (productId, quantity, cartId) => {
   const key = `lock_2024:${productId}`;

@@ -4,6 +4,7 @@ const morgan = require('morgan');
 const { default: helmet } = require('helmet');
 const compression = require('compression');
 const { checkOverload } = require('./helpers/checkConn');
+const pubsubService = require('./services/pubsub.service');
 const app = express();
 
 // Init Middleware
@@ -12,6 +13,11 @@ app.use(helmet());
 app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Test pub-sub
+require('./tests/inventory.test');
+const productTest = require('./tests/product.test');
+productTest.purchaseProduct('product:001', 10);
 
 // Init DB
 require('./databases/init.mongodb');
