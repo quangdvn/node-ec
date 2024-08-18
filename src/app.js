@@ -15,9 +15,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Test pub-sub
-require('./tests/inventory.test');
-const productTest = require('./tests/product.test');
-productTest.purchaseProduct('product:001', 10);
+// require('./tests/inventory.test');
+// const productTest = require('./tests/product.test');
+// productTest.purchaseProduct('product:001', 10);
 
 // Init DB
 require('./databases/init.mongodb');

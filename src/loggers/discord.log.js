@@ -16,7 +16,7 @@ class DiscordLoggerService {
     this.channelId = DISCORD_LOG_CHANNEL_ID;
 
     this.client.on('ready', () => {
-      console.log(`Logged in as ${this.client.user.tag}!`);
+      console.log(`Logged in to Discord as ${this.client.user.tag}!`);
     });
 
     this.client.login(DISCORD_BOT_TOKEN);

@@ -59,7 +59,7 @@ const authorizationV2 = asyncHandler(async (req, res, next) => {
   // 1
   const userId = req.headers[HEADERS.CLIENT_ID];
   if (!userId) throw new AuthenticationFailureError('Error: Invalid request');
-
+  
   // 2
   const keyStore = await KeyTokenService.findByUserId(userId);
   if (!keyStore) throw new NotFoundError('Error: Key not found');

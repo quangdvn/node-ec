@@ -86,9 +86,6 @@ const findAllProducts = async ({ limit, sort, page, filter, select }) => {
     .select(getSelectData(select))
     .lean()
     .exec();
-  console.log('Params', filter);
-  console.log('Params', select);
-  console.log('Found smt?', allProducts);
   return allProducts;
 };
 
