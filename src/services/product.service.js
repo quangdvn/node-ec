@@ -5,6 +5,8 @@ const {
   clothingModel,
   electronicModel,
 } = require('../models/product.model');
+const { insertToInventory } = require('../repositories/inventory.repo');
+const { pushNotificationToSystem } = require('./notification.service');
 
 // Base abstract product class
 class Product {
@@ -51,6 +53,25 @@ class Product {
   async create(productId) {
     // Ensure ids of product shema and sub schemas are equal
     const newProduct = await productModel.create({ ...this, _id: productId });
+    if (newProduct) {
+      // Add product stock to inventory
+      await insertToInventory({
+        productId,
+        shopId: this.productShop,
+        stock: this.productQuantity,
+      });
+    }
+    pushNotificationToSystem({
+      type: 'SHOP-001',
+      senderId: this.productShop,
+      options: {
+        productName: this.productName,
+        shopName: this.productShop,
+      },
+    })
+      .then((res) => console.log(res))
+      .catch(console.error);
+
     return newProduct;
   }
 }
