@@ -7,8 +7,6 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-console.log('123', process.env.CLOUDINARY_API_SECRET);
-
 module.exports = cloudinary;
 
 //   // Upload an image

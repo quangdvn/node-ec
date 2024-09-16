@@ -21,7 +21,6 @@ const { findProductById } = require('../repositories/product.repo');
 class CartSerivce {
   static async addProductToCart({ userId, product = {} }) {
     const userCart = await cartModel.findOne({ user: userId });
-    console.log('312312');
     if (!userCart) {
       // Create new cart for user, do not throw error
       return await createUserCart({ userId, product });

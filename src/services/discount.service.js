@@ -202,7 +202,6 @@ class DiscountService {
         select: ['productName'],
       });
     }
-    console.log('12321321', products);
     return products;
   }
 
