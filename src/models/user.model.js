@@ -1,28 +1,32 @@
 'use strict';
 const { Schema, model } = require('mongoose');
 
-const DOCUMENT_NAME = 'ApiKey';
-const COLLECTION_NAME = 'ApiKeys';
+const DOCUMENT_NAME = 'User';
+const COLLECTION_NAME = 'User';
 
-const userSchema = new Schema({
-  key: {
-    type: String,
-    required: true,
-    unique: true,
+const userSchema = new Schema(
+  {
+    id: { type: Number, required: true },
+    slug: { type: String, required: true },
+    name: { type: String, default: '' },
+    password: { type: String, default: '' },
+    salt: { type: String, default: '' },
+    email: { type: String, required: true },
+    phone: { type: String, default: '' },
+    sex: { type: String, default: '' },
+    avatar: { type: String, default: '' },
+    dob: { type: Date, default: null },
+    role: { type: Schema.Types.ObjectId, ref: 'Role' }, // TODO: Create Role model later
+    status: {
+      type: String,
+      default: 'PENDING',
+      enum: ['PENDING', 'ACTIVE', 'BLOCK'],
+    },
   },
-  status: {
-    type: Boolean,
-    default: true,
-  },
-  permissions: {
-    type: [String],
-    required: true,
-    enum: ['0000', '1111', '2222'],
-  },
-}, {
-  timestamps: true,
-  collection: COLLECTION_NAME,
-});
+  {
+    timestamps: true,
+    collection: COLLECTION_NAME,
+  }
+);
 
-
-module.exports = model(DOCUMENT_NAME, apiKeySchema);
+module.exports = model(DOCUMENT_NAME, userSchema);

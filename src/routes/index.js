@@ -1,7 +1,7 @@
 'use strict';
 const express = require('express');
 const { apiKeyCheck, permissionCheck } = require('../auth/authMiddleware');
-const { pushToDiscord } = require('../middlewares');
+const { pushToDiscord } = require('../middlewares/discord');
 const router = express.Router();
 
 // Check API Key - Will be used by BFF server
@@ -11,6 +11,8 @@ const router = express.Router();
 router.use(pushToDiscord);
 // Checkout without login
 router.use('/v1/api/checkout', require('./checkout/index'));
+router.use('/v1/api/rbac', require('./rbac/index'));
+router.use('/v1/api/profile', require('./profile/index'));
 router.use('/v1/api/discount', require('./discount/index'));
 router.use('/v1/api/inventory', require('./inventory/index'));
 router.use('/v1/api/cart', require('./cart/index'));
