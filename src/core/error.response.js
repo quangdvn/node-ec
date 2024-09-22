@@ -1,10 +1,28 @@
 'use strict';
 const { ReasonPhrases, StatusCodes } = require('./httpStatusCode');
-
 class ErrorResponse extends Error {
   constructor(message, statusCode) {
     super(message);
     this.statusCode = statusCode;
+    this.now = Date.now();
+
+    // TODO: Define a common pattern for log params
+    // Log error with winston
+    // logger.error(this.message, {
+    //   context: '/path',
+    //   requestId: 'UUIDDDDD',
+    //   message: this.message,
+    //   metadata: {},
+    // });
+    // logger.error(this.message, [
+    //   '/api/v1/login',
+    //   {
+    //     body: 'Hello',
+    //     requestId: 'UUIDDDDD',
+    //   },
+    //   { error: 'Bad Request' },
+    //   { ping: 'pong' },
+    // ]);
   }
 }
 
