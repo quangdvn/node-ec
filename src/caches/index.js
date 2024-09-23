@@ -4,11 +4,9 @@ const { resolve } = require('path');
 const redis = require('redis');
 const { promisify } = require('util');
 const { reserveInventory } = require('../repositories/inventory.repo');
+const { getRedis } = require('../databases/redis.init');
 
-const redisClient = redis.createClient({
-  host: '127.0.0.1',
-  port: 6379,
-});
+const redisClient = getRedis();
 
 // Redis version 3.1.2
 const pexpire = promisify(redisClient.pexpire).bind(redisClient);

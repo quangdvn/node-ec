@@ -4,9 +4,10 @@ const morgan = require('morgan');
 const { default: helmet } = require('helmet');
 const compression = require('compression');
 const { checkOverload } = require('./helpers/checkConn');
-const pubsubService = require('./services/pubsub.service');
+// const pubsubService = require('./services/pubsub.service');
 const { v4: uuidv4 } = require('uuid');
 const customLogger = require('./loggers/custom.log');
+const { initRedis } = require('./databases/redis.init');
 const app = express();
 
 // Init Middleware
@@ -34,7 +35,8 @@ app.use((req, res, next) => {
 // productTest.purchaseProduct('product:001', 10);
 
 // Init DB
-require('./databases/init.mongodb');
+require('./databases/mongodb.init');
+initRedis();
 // require('./databases/init.mongodb.demo');
 // checkOverload();
 
