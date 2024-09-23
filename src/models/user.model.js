@@ -6,7 +6,6 @@ const COLLECTION_NAME = 'User';
 
 const userSchema = new Schema(
   {
-    id: { type: Number, required: true },
     slug: { type: String, required: true },
     name: { type: String, default: '' },
     password: { type: String, default: '' },
@@ -19,7 +18,7 @@ const userSchema = new Schema(
     role: { type: Schema.Types.ObjectId, ref: 'Role' }, // TODO: Create Role model later
     status: {
       type: String,
-      default: 'PENDING',
+      default: 'ACTIVE',
       enum: ['PENDING', 'ACTIVE', 'BLOCK'],
     },
   },

@@ -41,7 +41,7 @@ const sendEmailToken = async ({ email = null }) => {
 
     // 3. Replace placeholder with params
     const content = replaceTemplatePlaceholder(template.html, {
-      link_verify: `http://localhost:3333/cgp/welcome-back?token=${otp.token}`,
+      link_verify: `http://localhost:3333/v1/api/user/new/validate?token=${otp.token}`,
     });
 
     // 3. Send email
