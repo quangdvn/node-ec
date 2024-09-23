@@ -10,6 +10,8 @@ const router = express.Router();
 // router.use(permissionCheck('0000'));
 router.use(pushToDiscord);
 // Checkout without login
+router.use('/v1/api/email', require('./email/index'));
+router.use('/v1/api/user', require('./user/index'));
 router.use('/v1/api/checkout', require('./checkout/index'));
 router.use('/v1/api/rbac', require('./rbac/index'));
 router.use('/v1/api/profile', require('./profile/index'));

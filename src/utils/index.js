@@ -53,6 +53,14 @@ const convertToMongoDBObjectId = (id) => {
   return Types.ObjectId.createFromHexString(id);
 };
 
+const replaceTemplatePlaceholder = (template, params) => {
+  let str = template;
+  Object.keys(params).forEach((key) => {
+    str = str.replace(`{{${key}}}`, params[key]);
+  });
+  return str;
+};
+
 module.exports = {
   getUserInfoData,
   getSelectData,
@@ -61,4 +69,5 @@ module.exports = {
   updateNestedObjectParser,
   removeNestedUndefinedObject,
   convertToMongoDBObjectId,
+  replaceTemplatePlaceholder,
 };
