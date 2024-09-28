@@ -5,8 +5,38 @@ const {
 } = require('../core/success.response');
 // const ProductService = require('../services/product.service');
 const AdvancedProductService = require('../services/advanced/advanced.product.service');
+const SkuService = require('../services/sku.service');
+const SpuService = require('../services/spu.service');
 
 class ProductController {
+  // ================== SPU / SKU ==================
+  createSpu = async (req, res, next) => {
+    new CreatedResponse({
+      message: 'Create new SPU successfully',
+      metadata: await SpuService.newSpu({
+        ...req.body,
+        productShop: req.user.userId,
+      }),
+    }).send(res);
+  };
+
+  findOneSpu = async (req, res, next) => {
+    const { spuId } = req.query;
+    new SuccessResponse({
+      message: 'Get SPU successfully',
+      metadata: await SpuService.oneSpu({ spuId }),
+    }).send(res);
+  };
+
+  findOneSku = async (req, res, next) => {
+    const { skuId, spuId } = req.query;
+    new SuccessResponse({
+      message: 'Get SKU successfully',
+      metadata: await SkuService.oneSku({ skuId, spuId }),
+    }).send(res);
+  };
+  // ================== SPU / SKU ==================
+
   createProduct = async (req, res, next) => {
     new CreatedResponse({
       message: 'Create Product successfully',
