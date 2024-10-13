@@ -38,15 +38,14 @@ require('./databases/mongodb.init');
 // checkOverload();
 
 // Init Elasticsearch
-const { initElasticSearch } = require('./databases/elasticsearch.init');
-initElasticSearch({
-  ELASTICSEARCH_IS_ENABLED: process.env.ELASTICSEARCH_IS_ENABLED,
-  ELASTICSEARCH_HOST: process.env.ELASTICSEARCH_HOST,
-});
+// const { initElasticSearch } = require('./databases/elasticsearch.init');
+// initElasticSearch({
+//   ELASTICSEARCH_IS_ENABLED: process.env.ELASTICSEARCH_IS_ENABLED,
+//   ELASTICSEARCH_HOST: process.env.ELASTICSEARCH_HOST,
+// });
 
 // Init Redis
 const { initIORedis } = require('./databases/ioredis.init');
-const { init } = require('./models/keyToken.model');
 initIORedis({
   IOREDIS_IS_ENABLED: process.env.IOREDIS_IS_ENABLED,
   IOREDIS_HOST: process.env.IOREDIS_HOST,
