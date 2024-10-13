@@ -1,5 +1,5 @@
 'use strict';
-const { accquireLock, releaseLock } = require('../caches');
+// const { accquireLock, releaseLock } = require('../caches');
 const { BadRequestError, NotFoundError } = require('../core/error.response');
 const cartModel = require('../models/cart.model');
 const orderModel = require('../models/order.model');
@@ -122,14 +122,14 @@ class CheckoutService {
     console.log('2', products);
 
     const accquireProducts = [];
-    for (let i = 0; i < products.length; i++) {
-      const { productId, quantity } = products[i];
-      const keyLock = await accquireLock(productId, quantity, cartId);
-      accquireProducts.push(keyLock ? true : false);
-      if (keyLock) {
-        await releaseLock(keyLock);
-      }
-    }
+    // for (let i = 0; i < products.length; i++) {
+    //   const { productId, quantity } = products[i];
+    //   const keyLock = await accquireLock(productId, quantity, cartId);
+    //   accquireProducts.push(keyLock ? true : false);
+    //   if (keyLock) {
+    //     await releaseLock(keyLock);
+    //   }
+    // }
 
     // If an product with 0 sku if found
     if (accquireProducts.includes(false)) {
@@ -168,10 +168,7 @@ class CheckoutService {
 
   // }
 
-  static async confirmPayment() {
-
-  }
-  
+  static async confirmPayment() {}
 }
 
 module.exports = CheckoutService;
