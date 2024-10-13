@@ -4,6 +4,10 @@ const { apiKeyCheck, permissionCheck } = require('../auth/authMiddleware');
 const { pushToDiscord } = require('../middlewares/discord');
 const router = express.Router();
 
+router.get('/v1/api/health-check', (req, res) => {
+  res.status(200).json({ message: 'Healthy' });
+});
+
 // Check API Key - Will be used by BFF server
 // router.use(apiKeyCheck);
 // Check permission
