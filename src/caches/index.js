@@ -4,9 +4,9 @@ const { resolve } = require('path');
 const redis = require('redis');
 const { promisify } = require('util');
 const { reserveInventory } = require('../repositories/inventory.repo');
-const { getRedis } = require('../databases/redis.init');
+const { getIORedis } = require('../databases/ioredis.init');
 
-const redisClient = getRedis();
+const redisClient = getIORedis();
 
 // Redis version 3.1.2
 const pexpire = promisify(redisClient.pexpire).bind(redisClient);

@@ -3,13 +3,18 @@ const express = require('express');
 const asyncHandler = require('../../helpers/asyncHandler');
 const productController = require('../../controllers/product.controller');
 const { authorizationV2 } = require('../../auth/authUtils');
+const { readFromCache } = require('../../middlewares/cache');
 const router = express.Router();
 
 router.get(
   '/search/:searchKey',
   asyncHandler(productController.searchProductsByUser)
 );
-router.get('/sku/variation', asyncHandler(productController.findOneSku));
+router.get(
+  '/sku/variation',
+  readFromCache,
+  asyncHandler(productController.findOneSku)
+);
 router.get('/spu/info', asyncHandler(productController.findOneSpu));
 
 router.get('/', asyncHandler(productController.findAllProducts));

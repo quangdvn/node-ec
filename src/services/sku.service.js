@@ -1,8 +1,9 @@
 'use strict';
 const _ = require('lodash');
-const { NotFoundError } = require('../core/error.response');
 const skuModel = require('../models/sku.model');
 const { randomProductId } = require('../utils');
+const { setCacheWithExpiration } = require('../repositories/cache.repo');
+const { EXPLICIT_NULL, CACHE_PRODUCT } = require('../utils/constants');
 
 class SkuService {
   static async newSku({ spuId, skuList = [] }) {
@@ -36,12 +37,45 @@ class SkuService {
 
   static async oneSku({ skuId, spuId }) {
     try {
-      // TODO: Read from cache before hitting DB
-      const sku = await skuModel.findOne({ _id: skuId, spuId }).lean(); // Convert to JSON for lodash
-      if (!sku) throw new NotFoundError('Sku not found');
+      // 1. Check params - Can put to middleware
+      if (skuId <= 0 || spuId <= 0) return null;
 
-      // TODO: Set to cache
-      return _.omit(sku, ['__v', 'updatedAt', 'createdAt', 'isDeleted']);
+      // 2. Hit cache - Moved to middleware
+      const skuKeyCache = `${CACHE_PRODUCT.SKU}${skuId}`;
+
+      // let foundSku = await getCache({ key: skuKeyCache });
+      // console.log('foundSku', foundSku);
+      // if (foundSku) {
+      //   if (foundSku.isExplicitNull) {
+      //     return {
+      //       sku: null,
+      //       toLoad: 'cache', // or 'db'
+      //     };
+      //   }
+      //   return {
+      //     ...foundSku,
+      //     toLoad: 'cache', // or 'db'
+      //   };
+      // } else {
+      // 3. Hit DB
+      const foundSku = await skuModel.findOne({ _id: skuId, spuId }).lean(); // Convert to JSON for lodash
+
+      const cacheValue = foundSku
+        ? _.omit(foundSku, ['__v', 'updatedAt', 'createdAt', 'isDeleted'])
+        : EXPLICIT_NULL;
+      await setCacheWithExpiration({
+        key: skuKeyCache,
+        value: cacheValue,
+        expirationInSeconds: 30,
+      });
+
+      return {
+        ...cacheValue,
+        toLoad: 'db',
+      };
+
+      // if (!sku) throw new NotFoundError('Sku not found');
+      // return _.omit(sku, ['__v', 'updatedAt', 'createdAt', 'isDeleted']);
     } catch (error) {
       throw error;
     }

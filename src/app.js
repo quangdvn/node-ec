@@ -7,7 +7,6 @@ const { checkOverload } = require('./helpers/checkConn');
 // const pubsubService = require('./services/pubsub.service');
 const { v4: uuidv4 } = require('uuid');
 const customLogger = require('./loggers/custom.log');
-const { initRedis } = require('./databases/redis.init');
 const app = express();
 
 // Init Middleware
@@ -36,9 +35,16 @@ app.use((req, res, next) => {
 
 // Init DB
 require('./databases/mongodb.init');
-initRedis();
+// initRedis();
 // require('./databases/init.mongodb.demo');
 // checkOverload();
+
+// Init Redis
+const { initIORedis } = require('./databases/ioredis.init');
+initIORedis({
+  IOREDIS_IS_ENABLED: process.env.IOREDIS_IS_ENABLED,
+  IOREDIS_HOST: process.env.IOREDIS_HOST,
+});
 
 // Init routes
 app.use('/', require('./routes/index'));
